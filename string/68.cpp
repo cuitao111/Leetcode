@@ -90,4 +90,5 @@ int main(){
     int  maxWidth = 16;
     vector<string> res = solu->fullJustify(words, maxWidth);
     cout  << 1 << endl;
+    // 结果没问题 leetcode报错
 }
