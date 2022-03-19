@@ -13,5 +13,7 @@ auto
 
 # 操作系统
 
+auto * it : nums智能指针如何使用
+
 
 https://www.nowcoder.com/discuss/837250
