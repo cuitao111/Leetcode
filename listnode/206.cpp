@@ -42,5 +42,9 @@ public:
 
 int main(){
     cout << 1 << endl;
+<<<<<<< HEAD
+=======
+    return 0;
+>>>>>>> d659c2680f223690630b89f194040860222d071c
 
 }
