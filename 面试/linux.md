@@ -579,6 +579,190 @@ int main(){
     return 0;
 }
 
+### open创建新文件
+创建一个新的文件
+int open(const char *pathname, int flags, mode_t mode);
+    参数：
+       - pathname:要创建的文件路径
+       - flags：对文件的操作权限和其他设置
+           - 必选项：O_RDONLY, O_WRONLY, O_RDWR 互斥
+           - 可选项：O_CREAT 文件不存在，创建
+       - mode：八进制数，表示创建出的新的文件的操作权限 rwx rwx r-x 0775 (最终权限mode & ~umask)  umask:0002 ~umask:0775 
+        0777 -> 111 111 111
+    &   0775 -> 111 111 101
+    ------------------------
+                111 111 101
+        按位与：0和任何数都为0
+        umask的作用就是抹去某些权限
+        可以自己设置 umask 0022
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <fcntl.h>
+#include <unistd.h>
+#include <stdio.h>
+int main(){
+    //创建一个新的文件
+    int fd = open("create.txt", O_RDWR | O_CREAT, 0777);
+
+    if(fd == -1){
+        perror("open");
+    }
+    close(fd);
+    return 0;
+}
+**O_RDWR | O_CREAT** 
+flags参数是一个int类型的数据，占4个字节，32位。
+flags 32位， 每一个就是一个标志位
+1 - R 2 - W 3 - RW 4 -  CR 
+
+
+### read write
+#include <unistd.h>
+
+ssize_t read(int fd, void *buf, size_t count);
+    参数：
+        - fd :文件描述符，open得到，通过fd操作文件
+        - buf：需要读取数据存放的地方，数组的地址（传出参数）
+        - count: 指定的数组的大小
+    返回值：
+        - 成功：
+            - >0:返回实际读取到的字节数
+            -  =0：文件已经读完了
+        - 失败： -1 ，并设置errno
+
+ssize_t write(int fd, const void *buf, size_t count);
+    参数：
+        - fd:文件描述符，open得到通过fd操作文件
+        - buf:要网磁盘写入的数据
+        - count：要写的数据实际的大小
+    返回值：
+        成功：实际写入的字节数
+        失败：返回-1，并设置errno
+
+文件拷贝代码
+#include <unistd.h>
+#include <stdio.h>
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <fcntl.h>
+
+int main(){
+    //通过open打开文件
+    int srcfd = open("english.txt", O_RDONLY);
+    if(srcfd == -1){
+        perror("open");
+        return -1;
+    }
+    //创建一个新文件
+    int destfd = open("cpy.txt", O_RDWR | O_CREATE);
+    if(destfd == -1){
+        perror("open");
+        return -1;
+    }
+    //频繁的读写操作
+    char buf[1024] = {0};
+    int len= 0;
+    while((len = read(srcfd, buf, sizeof(buf))) > 0){
+        write(destfd, buf, len);
+    }
+
+    //关闭文件
+    close(srcfd);
+    close(destfd);
+}
+
+
+### lseek
+
+标准C库
+#include <stdio.h>
+int fseek(FILE *stream, long offset, int whence);
+Linux系统函数
+#include <sys/types.h>
+#include <unistd.h>
+off_t lseek(int fd, off_t offset, int whence);
+    参数
+        - fd:文件描述符,open得到的，通过fd来操作某个文件
+        - offset：偏移量
+        - whence：
+            SEEK_SET 设置文件指针的偏移量
+            SEEK_CUR 设置偏移量：当前位置 + 第二个参数offset大小
+            SEEK_END 设置偏移量：文件大小 + 第二个参数offset值
+    作用：
+        1.移动文件指针到头文件
+        lseek(fd,0,SEEK_SET);
+        2.获取当前文件指针的位置
+        lseek(fd, 0 ,SEEK_CUR);
+        3.获取当前文件的长度
+        lseek(fd, 0, SEEK_END);
+        4.拓展文件的长度，当前文件10b, 110b, 增加了100个字节
+        lseek(fd, 100, SEEK_END);
+        需写一次数据
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <fcntl.h>
+#include <unistd.h>
+#include <stdio.h>
+int main(){
+    //读取原文件
+    int fd = open("hello.txt", O_RDWR);
+    if(fd == -1){
+        perror("open");
+        return -1;
+    }
+    //扩展文件的长度
+    int ret = lseek(fd, 100, SEEK_END);
+    if(ret == -1){
+        perror("lseek");
+        return -1;
+    }
+    //写入空数据
+    write(ret, " ", 1);
+
+    //关闭文件
+    close(fd);
+    return 0;
+}
+
+### stat lstat函数
+DESCRIPTION：返回一个文件的信息，放入statbuf中
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <unistd.h>
+
+int stat(const char *pathname, struct stat *buf);
+    作用：获取一个文件相关的信息
+    参数：
+        - pathname:操作文件的路径
+        - statbuf：结构体变量，传出参数，用于保存获取到的文件信息
+    返回值：
+        成功：返回0
+        失败：返回-1 设置errno
+
+
+
+stat a.txt
+    文件:文件名
+    大小： 多少字节
+    块：总共多少块
+    IO块：一个块占用多少字节
+    普通文件
+    设备：文件所在设备的标识
+    Inode：Linux中标识文件的值
+    硬链接：多少链接
+    权限：(0664/-rw-rw-r--)
+    Uid:用户Id
+    Gid：组Id
+    最近访问：
+    最近更改：
+
+
+int lstat(const char *pathname, struct stat *buf);
+    参数同stat
+
+
+
+
 
 
 
