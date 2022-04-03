@@ -813,3 +813,20 @@ int fcntl(int fd, int cmd, ... );
 # Linux网络编程
 
 # 项目实战
+
+
+### 问题
+内核空间的结构 存储内容
+用户空间与内核空间，进程上下文与中断上下文
+https://developer.aliyun.com/article/297087
+
+PCB在内核空间中？
+
+虚拟地址堆存放什么
+new malloc 自由存储区？、
+
+
+mono中的生命周期函数罗列一下
+
+父进程为1号进程（ppid=1）的僵尸进程处理和分析
+https://blog.csdn.net/YuZhiHui_No1/article/details/53011390
