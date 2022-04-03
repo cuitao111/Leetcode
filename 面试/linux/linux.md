@@ -18,6 +18,7 @@
 8. TCP三次握手和四次挥手
 9. TCP和UDP的区别
 
+目标：看目录能想出命令作用
 
 # Linux系统编程入门、
 
@@ -761,16 +762,51 @@ int lstat(const char *pathname, struct stat *buf);
     参数同stat
 
 
+### 模拟实现ls -l
+见ls-l.c
+
+### 文件属性操作函数
+
+//判断文件权限，判断文件是否存在
+#include <unistd.h>
+int access(const char *pathname, int mode);
+    参数：
+        - pathname:判断文件的路径
+        - mode：
+           - R_OK:是否有读权限
+           - W_OK:判断是否有写权限
+           - X_OK:判断是否有执行权限
+           - F_OK:判断文件是否存在
+    返回值：成功0 失败 - 1
+//修改文件权限
+int chmod(const char *pathname, mode_t mode);
+//修改文件所有者
+#include <unistd.h>
+int chown(const char *pathname, uid_t owner, gid_t group);
+//缩减或扩展某个文件到指定大小
+int truncate(const char *path, off_t length);
+
+### 目录操作
+int chdir(const char *path);
+作用：修改进程的工作目录
+char *getcwd(char *buf, size_t size);
+作用：获取当前工作目录
+int mkdir(const char *pathname, mode_t mode);
+作用：创建一个目录
+int rename(const char *oldpath, const char *newpath);
+重命名目录
+## 递归实现目录遍历
+opendir readdir closedir
+### dup dup2
+int dup(int oldfd);
+作用：复制一个新的文件描述符
+int dup2(int oldfd, int newfd);
+作用：重定向文件描述符
+### fcntl
+int fcntl(int fd, int cmd, ... );
+可以复制文件描述符，可以对文件描述符的状态进行设置或者获取
 
 
-
-
-
-
-
-
-
-# Linux多进程开发
 
 # Linux多线程开发
 
