@@ -830,3 +830,19 @@ mono中的生命周期函数罗列一下
 
 父进程为1号进程（ppid=1）的僵尸进程处理和分析
 https://blog.csdn.net/YuZhiHui_No1/article/details/53011390
+
+线程优先级
+
+IPC
+GUI （Graph ）
+IDE 
+APE
+
+
+## 重点
+静态库动态库区别，制作指令
+GDB调试
+虚拟地址空间
+文件描述符
+open read write lseek stat lstat
+dup dup2 fcntl
